@@ -46,6 +46,11 @@
             color: #34495e;
         }
 
+        h3 {
+            margin-top: 1rem;
+            color: #2c3e50;
+        }
+
         a {
             color: #0066cc;
             text-decoration: none;
@@ -59,6 +64,38 @@
             text-align: center;
             padding: 2rem 0;
             color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Tree styling */
+        .tree-root {
+            margin-top: 0.5rem;
+        }
+
+        .tree-root ul {
+            list-style-type: none;
+            padding-left: 1.1rem;
+            margin: 0.2rem 0;
+            border-left: 1px solid #ddd;
+        }
+
+        .tree-root li {
+            margin: 0.1rem 0;
+        }
+
+        details > summary {
+            cursor: pointer;
+        }
+
+        code {
+            background: #f1f1f1;
+            padding: 0.15rem 0.35rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .muted {
+            color: #777;
             font-size: 0.9rem;
         }
     </style>
@@ -76,44 +113,142 @@
     <section>
         <h2>Repository</h2>
         <p>This site serves as a simple landing page for the materials used in the study on children's helping behavior in operational and social situations.</p>
-        <p>View the full GitHub repository:</p>
+        <p>Full GitHub repository:</p>
         <p><a href="https://github.com/virginiamezzalira/OutsOpsSocialSituation" target="_blank">
             github.com/virginiamezzalira/OutsOpsSocialSituation
         </a></p>
     </section>
 
     <section>
-        <h2>Materials</h2>
-
-        <h3>Audio Stimuli</h3>
+        <h2>Materials (Folders & Files)</h2>
         <p>
-            <a href="https://github.com/virginiamezzalira/OutsOpsSocialSituation/tree/main/audios" target="_blank">
-                Browse audio files
-            </a>
+            Below you will find a structured listing of all folders, subfolders, and files
+            inside <code>audios/</code> and <code>images/</code>, generated automatically from
+            the repository. Each entry links directly to the file hosted on this site
+            (GitHub Pages), so you never leave the project website.
         </p>
 
-        <h3>Visual Stimuli</h3>
-        <p>
-            <a href="https://github.com/virginiamezzalira/OutsOpsSocialSituation/tree/main/images" target="_blank">
-                Browse images
-            </a>
+        <h3>Audio stimuli (<code>audios/</code>)</h3>
+        <div id="audios-tree" class="tree-root">
+            <p class="muted">Loading audio file tree…</p>
+        </div>
+
+        <h3>Visual stimuli (<code>images/</code>)</h3>
+        <div id="images-tree" class="tree-root">
+            <p class="muted">Loading image file tree…</p>
+        </div>
+
+        <p class="muted">
+            Note: If you later add new files or folders in <code>audios/</code> or
+            <code>images/</code>, this page will reflect them automatically (no manual edit needed).
         </p>
     </section>
 
     <section>
-        <h2>Direct Raw Asset Access</h2>
-        <p>You can link directly to raw assets in the repo using URLs of the form:</p>
+        <h2>Direct Raw Asset Access (for scripts etc.)</h2>
+        <p>You can also access raw files via URLs of the form:</p>
 
         <pre>
 https://raw.githubusercontent.com/virginiamezzalira/OutsOpsSocialSituation/main/audios/FILE_NAME.ext
 https://raw.githubusercontent.com/virginiamezzalira/OutsOpsSocialSituation/main/images/FILE_NAME.ext
         </pre>
     </section>
+
+    <section>
+        <h2>Citation</h2>
+        <p>Please cite the forthcoming paper when reusing these materials:</p>
+        <blockquote>
+            Mezzalira, V. et al. (YEAR). Title of the study. Journal/Preprint. DOI: TBD.
+        </blockquote>
+    </section>
+
 </main>
 
 <footer>
     &copy; 2025 Virginia Mezzalira — OutsOpsSocialSituation
 </footer>
+
+<script>
+/*
+ * IMPORTANT:
+ * - This assumes that `index.html`, `audios/`, and `images/` are all in the
+ *   GitHub Pages "published" root. For a typical project site:
+ *   https://virginiamezzalira.github.io/OutsOpsSocialSituation/
+ *   with Pages source = `main` / root, this is true.
+ *
+ * - If you publish from a `docs/` folder instead, either:
+ *   (a) move `audios/` and `images/` into `docs/`, or
+ *   (b) adjust the `visiblePath` generation below accordingly.
+ */
+
+const owner = "virginiamezzalira";
+const repo  = "OutsOpsSocialSituation";
+const apiBase = `https://api.github.com/repos/${owner}/${repo}/contents`;
+
+/**
+ * Recursively build a tree of folders/files under `path`, appending DOM nodes
+ * into `parentElement`.
+ */
+async function buildTree(path, parentElement) {
+    try {
+        const response = await fetch(`${apiBase}/${encodeURIComponent(path)}`);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        const items = await response.json();
+
+        // Sort: directories first, then files; both alphabetically
+        items.sort((a, b) => {
+            if (a.type === b.type) {
+                return a.name.localeCompare(b.name);
+            }
+            return a.type === "dir" ? -1 : 1;
+        });
+
+        const ul = document.createElement("ul");
+        parentElement.innerHTML = ""; // clear "loading" text
+        parentElement.appendChild(ul);
+
+        for (const item of items) {
+            const li = document.createElement("li");
+
+            if (item.type === "dir") {
+                const details = document.createElement("details");
+                const summary = document.createElement("summary");
+                summary.textContent = item.name;
+                details.appendChild(summary);
+                li.appendChild(details);
+                ul.appendChild(li);
+
+                // Recursively fetch the folder contents and append to <details>
+                await buildTree(item.path, details);
+            } else if (item.type === "file") {
+                const link = document.createElement("a");
+                // item.path is repo-relative; use it as relative href on the site
+                link.href = item.path;
+                link.textContent = item.name;
+                li.appendChild(link);
+                ul.appendChild(li);
+            }
+        }
+    } catch (err) {
+        parentElement.innerHTML = "";
+        const errorMsg = document.createElement("p");
+        errorMsg.className = "muted";
+        errorMsg.textContent = `Could not load contents of "${path}" (${err.message}).`;
+        parentElement.appendChild(errorMsg);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const audiosRoot = document.getElementById("audios-tree");
+    const imagesRoot = document.getElementById("images-tree");
+
+    // Build tree for audios/ and images/
+    buildTree("audios", audiosRoot);
+    buildTree("images", imagesRoot);
+});
+</script>
 
 </body>
 </html>
