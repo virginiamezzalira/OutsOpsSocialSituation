@@ -114,44 +114,64 @@
         <h2>Repository</h2>
         <p>This site serves as a simple landing page for the materials used in the study on children's helping behavior in operational and social situations.</p>
         <p>Full GitHub repository:</p>
-        <p><a href="https://github.com/virginiamezzalira/OutsOpsSocialSituation" target="_blank">
-            github.com/virginiamezzalira/OutsOpsSocialSituation
-        </a></p>
+        <p>
+            <a href="https://github.com/virginiamezzalira/OutsOpsSocialSituation" target="_blank">
+                github.com/virginiamezzalira/OutsOpsSocialSituation
+            </a>
+        </p>
     </section>
 
+    <!-- SIMPLE LINKS TO GITHUB FOLDERS -->
     <section>
-        <h2>Materials (Folders & Files)</h2>
+        <h2>Quick links to materials on GitHub</h2>
         <p>
-            Below you will find a structured listing of all folders, subfolders, and files
-            inside <code>audios/</code> and <code>images/</code>, generated automatically from
-            the repository. Each entry links directly to the file hosted on this site
-            (GitHub Pages), so you never leave the project website.
+            These links take you directly to the corresponding folders in the GitHub repository:
+        </p>
+        <ul>
+            <li>
+                <strong>Audio stimuli</strong> –
+                <a href="https://github.com/virginiamezzalira/OutsOpsSocialSituation/tree/main/audios" target="_blank">
+                    audios/
+                </a>
+            </li>
+            <li>
+                <strong>Visual stimuli</strong> –
+                <a href="https://github.com/virginiamezzalira/OutsOpsSocialSituation/tree/main/images" target="_blank">
+                    images/
+                </a>
+            </li>
+        </ul>
+    </section>
+
+    <!-- DETAILED LISTING OF IMAGE SUBFOLDERS AND FILES (STAYING ON PAGES) -->
+    <section>
+        <h2>Visual stimuli – folders & assets</h2>
+        <p>
+            Below is a structured listing of all folders, subfolders, and files inside
+            <code>images/</code>. Folder names are shown as expandable sections, and each file
+            is a direct link to the asset on this site.
         </p>
 
-        <h3>Audio stimuli (<code>audios/</code>)</h3>
-        <div id="audios-tree" class="tree-root">
-            <p class="muted">Loading audio file tree…</p>
-        </div>
-
-        <h3>Visual stimuli (<code>images/</code>)</h3>
+        <h3>images/</h3>
         <div id="images-tree" class="tree-root">
             <p class="muted">Loading image file tree…</p>
         </div>
 
         <p class="muted">
-            Note: If you later add new files or folders in <code>audios/</code> or
-            <code>images/</code>, this page will reflect them automatically (no manual edit needed).
+            Note: Hidden/system files such as <code>.DS_Store</code> are automatically ignored.
+            New images and folders added under <code>images/</code> will appear here without
+            changing this page.
         </p>
     </section>
 
     <section>
-        <h2>Direct Raw Asset Access (for scripts etc.)</h2>
+        <h2>Direct raw asset access (for scripts, programmatic use)</h2>
         <p>You can also access raw files via URLs of the form:</p>
 
-        <pre>
+<pre>
 https://raw.githubusercontent.com/virginiamezzalira/OutsOpsSocialSituation/main/audios/FILE_NAME.ext
 https://raw.githubusercontent.com/virginiamezzalira/OutsOpsSocialSituation/main/images/FILE_NAME.ext
-        </pre>
+</pre>
     </section>
 
     <section>
@@ -171,14 +191,15 @@ https://raw.githubusercontent.com/virginiamezzalira/OutsOpsSocialSituation/main/
 <script>
 /*
  * IMPORTANT:
- * - This assumes that `index.html`, `audios/`, and `images/` are all in the
- *   GitHub Pages "published" root. For a typical project site:
+ * - This assumes that `index.html` and `images/` are both in the
+ *   GitHub Pages "published" root.
+ *   For a typical project site:
  *   https://virginiamezzalira.github.io/OutsOpsSocialSituation/
  *   with Pages source = `main` / root, this is true.
  *
  * - If you publish from a `docs/` folder instead, either:
- *   (a) move `audios/` and `images/` into `docs/`, or
- *   (b) adjust the `visiblePath` generation below accordingly.
+ *   (a) move `images/` inside `docs/`, or
+ *   (b) adjust the `link.href = item.path;` line to match your structure.
  */
 
 const owner = "virginiamezzalira";
@@ -187,7 +208,7 @@ const apiBase = `https://api.github.com/repos/${owner}/${repo}/contents`;
 
 /**
  * Recursively build a tree of folders/files under `path`, appending DOM nodes
- * into `parentElement`.
+ * into `parentElement`. Hidden files (starting with ".") are skipped.
  */
 async function buildTree(path, parentElement) {
     try {
@@ -205,11 +226,17 @@ async function buildTree(path, parentElement) {
             return a.type === "dir" ? -1 : 1;
         });
 
+        // parentElement is a dedicated container (never the <details> itself),
+        // so it is safe to clear its contents.
+        parentElement.innerHTML = "";
+
         const ul = document.createElement("ul");
-        parentElement.innerHTML = ""; // clear "loading" text
         parentElement.appendChild(ul);
 
         for (const item of items) {
+            // Skip hidden/system files like .DS_Store
+            if (item.name.startsWith(".")) continue;
+
             const li = document.createElement("li");
 
             if (item.type === "dir") {
@@ -217,14 +244,20 @@ async function buildTree(path, parentElement) {
                 const summary = document.createElement("summary");
                 summary.textContent = item.name;
                 details.appendChild(summary);
+
+                // Container for this directory’s children
+                const childContainer = document.createElement("div");
+                details.appendChild(childContainer);
+
                 li.appendChild(details);
                 ul.appendChild(li);
 
-                // Recursively fetch the folder contents and append to <details>
-                await buildTree(item.path, details);
+                // Recursively fetch the folder contents and append to childContainer
+                await buildTree(item.path, childContainer);
             } else if (item.type === "file") {
                 const link = document.createElement("a");
-                // item.path is repo-relative; use it as relative href on the site
+                // item.path is repo-relative; using it directly as a relative URL
+                // on the project site keeps the user on Pages.
                 link.href = item.path;
                 link.textContent = item.name;
                 li.appendChild(link);
@@ -241,11 +274,8 @@ async function buildTree(path, parentElement) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    const audiosRoot = document.getElementById("audios-tree");
     const imagesRoot = document.getElementById("images-tree");
-
-    // Build tree for audios/ and images/
-    buildTree("audios", audiosRoot);
+    // Build tree just for images/ (as requested)
     buildTree("images", imagesRoot);
 });
 </script>
