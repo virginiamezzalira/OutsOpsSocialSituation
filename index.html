@@ -1,1 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Outside Options Social Situation</title>
 
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #fafafa;
+            color: #222;
+            line-height: 1.6;
+        }
+
+        header {
+            background: #2c3e50;
+            color: #fff;
+            padding: 2rem 1rem;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.2rem;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        section {
+            background: white;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #34495e;
+        }
+
+        h3 {
+            margin-top: 1rem;
+            color: #2c3e50;
+        }
+
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Tree styling */
+        .tree-root {
+            margin-top: 0.5rem;
+        }
+
+        .tree-root ul {
+            list-style-type: none;
+            padding-left: 1.1rem;
+            margin: 0.2rem 0;
+            border-left: 1px solid #ddd;
+        }
+
+        .tree-root li {
+            margin: 0.1rem 0;
+        }
+
+        details > summary {
+            cursor: pointer;
+        }
+
+        code {
+            background: #f1f1f1;
+            padding: 0.15rem 0.35rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .muted {
+            color: #777;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>OutsOpsSocialSituation</h1>
+    <p>Project Assets & Study Materials</p>
+</header>
+
+<main>
+
+    <section>
+        <h2>Repository</h2>
+        <p>This site serves as a simple landing page for the materials used in the study on children's bargaining behavior in social situations.</p>
+        <p>Full GitHub repository:</p>
+        <p>
+            <a href="https://github.com/virginiamezzalira/OutsOpsSocialSituation" target="_blank">
+                github.com/virginiamezzalira/OutsOpsSocialSituation
+            </a>
+        </p>
+    </section>
+
+    <!-- SIMPLE LINKS TO GITHUB FOLDERS -->
+    <section>
+        <h2>Quick links to materials on GitHub</h2>
+        <p>
+            These links take you directly to the corresponding folders in the GitHub repository:
+        </p>
+        <ul>
+            <li>
+                <strong>Audio stimuli</strong> –
+                <a href="https://github.com/virginiamezzalira/OutsOpsSocialSituation/tree/main/audios" target="_blank">
+                    audios/
+                </a>
+            </li>
+            <li>
+                <strong>Visual stimuli</strong> –
+                <a href="https://github.com/virginiamezzalira/OutsOpsSocialSituation/tree/main/images" target="_blank">
+                    images/
+                </a>
+            </li>
+        </ul>
+    </section>
+
+    <!-- DETAILED LISTING OF IMAGE SUBFOLDERS AND FILES (STAYING ON PAGES) -->
+    <section>
+        <h2>Visual stimuli – folders & assets</h2>
+        <p>
+            Below is a structured listing of all folders, subfolders, and files inside
+            <code>images/</code>. Folder names are shown as expandable sections, and each file
+            is a direct link to the asset on this site.
+        </p>
+
+        <h3>images/</h3>
+        <div id="images-tree" class="tree-root">
+            <p class="muted">Loading image file tree…</p>
+        </div>
+
+        <p class="muted">
+            Note: Hidden/system files such as <code>.DS_Store</code> are automatically ignored.
+            New images and folders added under <code>images/</code> will appear here without
+            changing this page.
+        </p>
+    </section>
+
+    <section>
+        <h2>Direct raw asset access (for scripts, programmatic use)</h2>
+        <p>You can also access raw files via URLs of the form:</p>
+
+<pre>
+https://raw.githubusercontent.com/virginiamezzalira/OutsOpsSocialSituation/main/audios/FILE_NAME.ext
+https://raw.githubusercontent.com/virginiamezzalira/OutsOpsSocialSituation/main/images/FILE_NAME.ext
+</pre>
+    </section>
+    
+</main>
+
+<footer>
+    &copy; 2025 Virginia Mezzalira — OutsOpsSocialSituation
+</footer>
+
+<script>
+/*
+ * IMPORTANT:
+ * - This assumes that `index.html` and `images/` are both in the
+ *   GitHub Pages "published" root.
+ *   For a typical project site:
+ *   https://virginiamezzalira.github.io/OutsOpsSocialSituation/
+ *   with Pages source = `main` / root, this is true.
+ *
+ * - If you publish from a `docs/` folder instead, either:
+ *   (a) move `images/` inside `docs/`, or
+ *   (b) adjust the `link.href = item.path;` line to match your structure.
+ */
+
+const owner = "virginiamezzalira";
+const repo  = "OutsOpsSocialSituation";
+const apiBase = `https://api.github.com/repos/${owner}/${repo}/contents`;
+
+/**
+ * Recursively build a tree of folders/files under `path`, appending DOM nodes
+ * into `parentElement`. Hidden files (starting with ".") are skipped.
+ */
+async function buildTree(path, parentElement) {
+    try {
+        const response = await fetch(`${apiBase}/${encodeURIComponent(path)}`);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        const items = await response.json();
+
+        // Sort: directories first, then files; both alphabetically
+        items.sort((a, b) => {
+            if (a.type === b.type) {
+                return a.name.localeCompare(b.name);
+            }
+            return a.type === "dir" ? -1 : 1;
+        });
+
+        // parentElement is a dedicated container (never the <details> itself),
+        // so it is safe to clear its contents.
+        parentElement.innerHTML = "";
+
+        const ul = document.createElement("ul");
+        parentElement.appendChild(ul);
+
+        for (const item of items) {
+            // Skip hidden/system files like .DS_Store
+            if (item.name.startsWith(".")) continue;
+
+            const li = document.createElement("li");
+
+            if (item.type === "dir") {
+                const details = document.createElement("details");
+                const summary = document.createElement("summary");
+                summary.textContent = item.name;
+                details.appendChild(summary);
+
+                // Container for this directory’s children
+                const childContainer = document.createElement("div");
+                details.appendChild(childContainer);
+
+                li.appendChild(details);
+                ul.appendChild(li);
+
+                // Recursively fetch the folder contents and append to childContainer
+                await buildTree(item.path, childContainer);
+            } else if (item.type === "file") {
+                const link = document.createElement("a");
+                // item.path is repo-relative; using it directly as a relative URL
+                // on the project site keeps the user on Pages.
+                link.href = item.path;
+                link.textContent = item.name;
+                li.appendChild(link);
+                ul.appendChild(li);
+            }
+        }
+    } catch (err) {
+        parentElement.innerHTML = "";
+        const errorMsg = document.createElement("p");
+        errorMsg.className = "muted";
+        errorMsg.textContent = `Could not load contents of "${path}" (${err.message}).`;
+        parentElement.appendChild(errorMsg);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const imagesRoot = document.getElementById("images-tree");
+    // Build tree just for images/ (as requested)
+    buildTree("images", imagesRoot);
+});
+</script>
+
+</body>
+</html>
